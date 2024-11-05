@@ -44,12 +44,17 @@
       ></textarea>
     </div>
 
-    <script>
+  <script>
       const DAYS_IN_MONTH = [0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
       const CONTROL_DIGITS = [4, 3, 2, 7, 6, 5, 4, 3, 2, 1]
 
+      const url = new URL(window.location.href)
+
       const generatePossibleCPRNumbers = () => {
         output.value = ''
+        url.searchParams.set('date', date.value)
+        url.searchParams.set('sex', male.checked ? 1 : 0)
+        window.history.replaceState('', '', url.href)
 
         const [year, month, day] = date.value.split('-')
         if (!year || !month || !day) return
@@ -111,16 +116,23 @@
       male.onclick = generatePossibleCPRNumbers
       female.onclick = generatePossibleCPRNumbers
 
-      const startPeople = [
-        // Guess who, they're the same
-        ['1977-11-19', female],
-        ['1889-04-20', male],
-      ]
-      const startPerson =
-        startPeople[Math.floor(Math.random() * startPeople.length)]
-      date.value = startPerson[0]
-      startPerson[1].checked = true
-
+      const urlDate = url.searchParams.get('date')
+      const urlSex = url.searchParams.get('sex')
+      if (urlDate && urlSex) {
+        date.value = urlDate
+        if (urlSex === '1') male.checked = true
+        else female.checked = true
+      } else {
+        const startPeople = [
+          // Guess who, they're the same
+          ['1977-11-19', female],
+          ['1889-04-20', male],
+        ]
+        const startPerson =
+          startPeople[Math.floor(Math.random() * startPeople.length)]
+        date.value = startPerson[0]
+        startPerson[1].checked = true
+      }
       generatePossibleCPRNumbers()
     </script>
   </body>
