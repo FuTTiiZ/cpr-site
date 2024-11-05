@@ -62,11 +62,13 @@
 
     <script>
       const CONTROL_DIGITS = [4, 3, 2, 7, 6, 5, 4, 3, 2, 1]
+      
+      const url = new URL(window.location.href)
 
-      input.oninput = function () {
-        this.value = this.value.replace(/\D/g, '')
+      const displayInfoFromCPR = (cpr) => {
+        url.searchParams.set('cpr', cpr)
+        window.history.replaceState('', '', url.href)
 
-        const cpr = this.value
         if (cpr.length !== 10) {
           passed.innerText = '?'
           sex.innerText = '?'
@@ -107,6 +109,17 @@
                   : '19'
 
         year.innerText = century + yearDigits
+
+      }
+      input.oninput = function () {
+        this.value = this.value.replace(/\D/g, '')
+        displayInfoFromCPR(this.value)
+      }
+      
+      const urlCPR = url.searchParams.get('cpr')
+      if (urlCPR) {
+        input.value = urlCPR
+        displayInfoFromCPR(urlCPR)
       }
     </script>
   </body>
