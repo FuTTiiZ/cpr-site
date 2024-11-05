@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CPR - Mulige CPR-numre</title>
+  </head>
+  <body>
+    <nav>
+      <a href="/">Hjem |</a>
+      <a href="#">Mulige CPR-numre |</a>
+      <a href="/info.html">Information fra CPR-nummer</a>
+    </nav>
+
+    <h1>Mulige CPR-numre</h1>
+    <p>
+      Generer alle gyldige modulus 11 kontrollerede<sup
+        >[
+        <a
+          href="https://da.wikipedia.org/wiki/CPR-nummer#Kontrolciffer_(det_gamle_CPR-nummer)"
+          title="Wikipedia"
+          >?</a
+        >]</sup
+      >
+      CPR-numre
+    </p>
+
+    <div style="margin-bottom: 1rem">
+      <input type="date" id="date" />
+
+      <input type="radio" name="sex" id="male" />
+      <label for="sex">Mand</label>
+      <input type="radio" name="sex" id="female" />
+      <label for="sex">Kvinde</label>
+    </div>
+
+    <div>
+      <textarea
+        id="output"
+        cols="20"
+        rows="40"
+        style="resize: none; font-size: 1.2rem"
+        readonly
+      ></textarea>
+    </div>
+
+    <script>
+      const DAYS_IN_MONTH = [0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
+      const CONTROL_DIGITS = [4, 3, 2, 7, 6, 5, 4, 3, 2, 1]
+
+      const generatePossibleCPRNumbers = () => {
+        output.value = ''
+
+        const [year, month, day] = date.value.split('-')
+        if (!year || !month || !day) return
+        if (year < 1858 || year > 2057) {
+          output.value = 'CPR godtager kun årstal fra 1858 til 2057 (inklusiv)'
+          return
+        }
+        if (month < 0 || month > 12) {
+          output.value = 'Ugyldig måned'
+          return
+        }
+        if (
+          day < 0 ||
+          day >
+            DAYS_IN_MONTH[parseInt(month)] +
+              (year % 4 === 0 && month == 2 ? 1 : 0)
+        ) {
+          output.value = 'Ugyldig dag'
+          return
+        }
+
+        const sex = male.checked ? 1 : 0
+
+        const century = year.slice(0, 2)
+        const yearDigits = year.slice(2)
+        const centuryDigit =
+          century === '19'
+            ? yearDigits <= 36
+              ? [0, 1, 2, 3]
+              : [0, 1, 2, 3, 4, 9]
+            : century === '20'
+            ? yearDigits >= 37
+              ? [5, 6, 7, 8]
+              : [4, 5, 6, 7, 8, 9]
+            : [5, 6, 7, 8]
+
+        const dateStr = day + month + yearDigits
+
+        for (const digit of centuryDigit) {
+          for (let i = 0; i < 100; i++) {
+            const cpr = dateStr + digit + i.toString().padStart(2, '0')
+            const rest =
+              cpr
+                .split('')
+                .map((v, i) => v * CONTROL_DIGITS[i])
+                .reduce((a, b) => a + b) % 11
+
+            if (rest === 1) continue
+            const controlDigit = rest > 1 ? 11 - rest : 0
+
+            if ((controlDigit & 1) !== sex) continue
+
+            output.value += cpr + controlDigit + '\n'
+          }
+        }
+      }
+
+      date.oninput = generatePossibleCPRNumbers
+      male.onclick = generatePossibleCPRNumbers
+      female.onclick = generatePossibleCPRNumbers
+
+      const startPeople = [
+        // Guess who, they're the same
+        ['1977-11-19', female],
+        ['1889-04-20', male],
+      ]
+      const startPerson =
+        startPeople[Math.floor(Math.random() * startPeople.length)]
+      date.value = startPerson[0]
+      startPerson[1].checked = true
+
+      generatePossibleCPRNumbers()
+    </script>
+  </body>
+</html>

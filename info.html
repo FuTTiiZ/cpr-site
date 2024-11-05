@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <style>
+      table,
+      th,
+      td {
+        border: 1px solid black;
+        border-collapse: collapse;
+      }
+
+      td {
+        padding-inline: 1rem;
+      }
+    </style>
+    <title>CPR - Info fra CPR</title>
+  </head>
+  <body>
+    <nav>
+      <a href="/">Hjem |</a>
+      <a href="/possible.html">Mulige CPR-numre |</a>
+      <a href="#">Information fra CPR-nummer</a>
+    </nav>
+
+    <h1>Information fra CPR-nummer</h1>
+    <div style="margin-bottom: 1rem;">
+      <table>
+        <tbody>
+          <tr>
+            <td
+              title="Modulus 11 kontrol er en matematisk metode til at kontrollere, hvorvidt et CPR-nummer er gyldigt"
+            >
+              Består modulus 11 kontrol<sup
+                >[
+                <a
+                  href="https://da.wikipedia.org/wiki/CPR-nummer#Kontrolciffer_(det_gamle_CPR-nummer)"
+                  title="Wikipedia"
+                  >?</a
+                >]</sup
+              >
+            </td>
+            <td id="passed">?</td>
+          </tr>
+          <tr>
+            <td title="Lige kontrolciffer for kvinder, ulige for mænd">Køn</td>
+            <td id="sex">?</td>
+          </tr>
+          <tr>
+            <td title="Århundrede kan beregnes vha. matematik">Fødselsår<sup>[<a
+                  href="https://da.wikipedia.org/wiki/CPR-nummer#Under_eller_over_100_%C3%A5r"
+                  title="Wikipedia"
+                  >?</a
+                >]</sup</td>
+            <td id="year">?</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <input type="text" id="input" placeholder="Skriv CPR-nummer her" />
+
+    <script>
+      const CONTROL_DIGITS = [4, 3, 2, 7, 6, 5, 4, 3, 2, 1]
+
+      input.oninput = function () {
+        this.value = this.value.replace(/\D/g, '')
+
+        const cpr = this.value
+        if (cpr.length !== 10) {
+          passed.innerText = '?'
+          sex.innerText = '?'
+          year.innerText = '?'
+          return
+        }
+
+        // Control
+        passed.innerText =
+          cpr
+            .split('')
+            .map((v, i) => v * CONTROL_DIGITS[i])
+            .reduce((a, b) => a + b) %
+            11 ===
+          0
+            ? 'JA'
+            : 'NEJ'
+
+        // Sex
+        sex.innerText = (cpr[9] & 1) === 0 ? 'Kvinde' : 'Mand'
+
+        // Century
+        const yearDigits = cpr[4] + cpr[5]
+        const centDigit = cpr[6]
+        let century = 
+          centDigit <= 3 
+            ? '19'
+            : centDigit === 4
+              ? yearDigits <= 36
+                ? '20'
+                : '19'
+              : centDigit <= 8
+                ? yearDigits <= 57
+                  ? '20'
+                  : '18'
+                : yearDigits <= 36
+                  ? '20'
+                  : '19'
+
+        year.innerText = century + yearDigits
+      }
+    </script>
+  </body>
+</html>
